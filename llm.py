@@ -1,7 +1,11 @@
 from groq import Groq
 
-# paste the API key here because git doesnt let me push it lol
-client = Groq(api_key="")
+groq_key = ""
+# paste the API key as a text file here because git doesnt let me push it lol
+with open("groq_key.txt") as file:
+    groq_key = file.read()
+
+client = Groq(api_key=groq_key)
 
 async def query_llm(prompt: str):
 
