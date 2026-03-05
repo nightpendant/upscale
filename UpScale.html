@@ -185,7 +185,7 @@
                         <div class="grid grid-cols-2 gap-6">
                             <div class="col-span-2 md:col-span-1 space-y-2">
                                 <label class="text-[10px] font-black text-gray-400 uppercase ml-2">Project Name</label>
-                                <input type="text" class="w-full bg-gray-50 border-0 rounded-2xl p-4 outline-none focus:ring-2 ring-green-500 font-bold" placeholder="Activity Title">
+                                <input id="projectName" type="text" class="w-full bg-gray-50 border-0 rounded-2xl p-4 outline-none focus:ring-2 ring-green-500 font-bold" placeholder="Activity Title">
                             </div>
                             <div class="col-span-2 md:col-span-1 space-y-2">
                                 <label class="text-[10px] font-black text-gray-400 uppercase ml-2">Type of Activity</label>
@@ -196,15 +196,15 @@
                             </div>
                             <div class="col-span-2 md:col-span-1 space-y-2">
                                 <label class="text-[10px] font-black text-gray-400 uppercase ml-2">SCALE Adviser</label>
-                                <input type="text" class="w-full bg-gray-50 border-0 rounded-2xl p-4 outline-none focus:ring-2 ring-green-500 font-bold" placeholder="Teacher Name">
+                                <input id="advisor" type="text" class="w-full bg-gray-50 border-0 rounded-2xl p-4 outline-none focus:ring-2 ring-green-500 font-bold" placeholder="Teacher Name">
                             </div>
                             <div class="col-span-2 md:col-span-1 space-y-2">
                                 <label class="text-[10px] font-black text-gray-400 uppercase ml-2">Venue</label>
-                                <input type="text" class="w-full bg-gray-50 border-0 rounded-2xl p-4 outline-none focus:ring-2 ring-green-500 font-bold" placeholder="Location">
+                                <input id="venue" type="text" class="w-full bg-gray-50 border-0 rounded-2xl p-4 outline-none focus:ring-2 ring-green-500 font-bold" placeholder="Location">
                             </div>
                             <div class="col-span-2 md:col-span-1 space-y-2">
                                 <label class="text-[10px] font-black text-gray-400 uppercase ml-2">Date</label>
-                                <input type="date" class="w-full bg-gray-50 border-0 rounded-2xl p-4 font-bold text-gray-500 outline-none">
+                                <input id="date" type="date" class="w-full bg-gray-50 border-0 rounded-2xl p-4 font-bold text-gray-500 outline-none">
                             </div>
                         </div>
 
@@ -250,10 +250,11 @@
 
                         <div class="space-y-2">
                             <label class="text-[10px] font-black text-gray-400 uppercase ml-2">Description</label>
-                            <textarea class="w-full bg-gray-50 border-0 rounded-3xl p-6 h-32 outline-none focus:ring-2 ring-green-500 font-medium" placeholder="Describe the activity..."></textarea>
+                            <textarea id="description" class="w-full bg-gray-50 border-0 rounded-3xl p-6 h-32 outline-none focus:ring-2 ring-green-500 font-medium" placeholder="Describe the activity..."></textarea>
                         </div>
 
-                        <button type="button" class="w-full forest-gradient text-white font-black py-5 rounded-2xl shadow-xl hover:brightness-110 transition-all uppercase tracking-widest text-sm">✨ Generate Activity Reflection</button>
+                        <button id="analyzeBtn" type="button" class="w-full forest-gradient text-white font-black py-5 rounded-2xl shadow-xl hover:brightness-110 transition-all uppercase tracking-widest text-sm">🧠 Analyze and Review Activity</button>
+						<button id="reflectBtn" type="button" class="w-full forest-gradient text-white font-black py-5 rounded-2xl shadow-xl hover:brightness-110 transition-all uppercase tracking-widest text-sm">✨ Generate Activity Reflection</button>
                     </form>
                 </div>
             </div>
@@ -288,6 +289,65 @@
             document.getElementById('percent-text').innerText = pct + '%';
         }
         updateUI();
+
+		function collectFormData() {
+			const projectName = document.getElementById("projectName").value
+			const advisor = document.getElementById("advisor").value
+			const venue = document.getElementById("venue").value
+			const date = document.getElementById("date").value
+			const description = document.getElementById("description").value
+
+			const type = document.querySelector(".type-btn.text-green-700")?.innerText || "Individual"
+
+			const strands = [...document.querySelectorAll(".obj-chip.active")]
+				.map(e => e.innerText)
+
+			const outcomes = [...document.querySelectorAll('input[type="checkbox"]:checked')]
+				.map(cb => cb.nextElementSibling.innerText).filter(item => item !== "✓");
+
+			return {
+				project_name: projectName,
+				advisor: advisor,
+				venue: venue,
+				date: date,
+				description: description,
+				type: type,
+				strands: strands,
+				learning_outcomes: outcomes
+			}
+		}
+
+		async function sendRequest(action) {
+
+			const btn = event.target
+			btn.disabled = true
+			btn.innerText = "Processing..."
+
+			const data = collectFormData()
+
+			console.log(data)
+
+			const response = await fetch("http://localhost:8000/analyze", {
+				method: "POST",
+				headers: {"Content-Type": "application/json"},
+				body: JSON.stringify({ action: action, activity: data })
+			})
+
+			const result = await response.json()
+
+			console.log(result)
+
+			btn.disabled = false
+			btn.innerText = action === "analyze"
+				? "🧠 Analyze Activity"
+				: "✨ Generate Activity Reflection"
+		}
+
+		document.getElementById("analyzeBtn")
+			.addEventListener("click", () => sendRequest("analyze"))
+
+		document.getElementById("reflectBtn")
+			.addEventListener("click", () => sendRequest("reflection"))
     </script>
 </body>
 </html>
