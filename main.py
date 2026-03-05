@@ -14,7 +14,14 @@ async def analyze(request: AnalysisRequest):
     prompt_template = PROMPTS[request.action]
 
     prompt = prompt_template.format(
-        proposal=request.proposal_text
+        project_name=request.project_name,
+        advisor=request.advisor,
+        venue=request.venue,
+        date=request.date,
+        description=request.description,
+        type=request.type,
+        strands=request.strands,
+        learning_outcomes=request.learning_outcomes,
     )
 
     result = await query_llm(prompt)

@@ -1,5 +1,12 @@
 from pydantic import BaseModel
 
 class AnalysisRequest(BaseModel):
-    proposal_text: str
     action: str
+    project_name: str
+    advisor: str
+    venue: str
+    date: str
+    description: str
+    type: str
+    strands: list[str]
+    learning_outcomes: list[str]
